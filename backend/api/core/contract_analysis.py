@@ -378,18 +378,23 @@ def _tool_schema() -> dict:
     }
 
 
-def _response_payload(*, source_code: str, model: str) -> dict:
-    prompt = (
-        f'{SYSTEM_PROMPT}\n\n'
+def _analysis_user_prompt(*, source_code: str) -> str:
+    return (
         'Review the following Solidity contract source and report only meaningful security vulnerabilities. '
         'Return your final answer by calling the function tool.\n\n'
         '```solidity\n'
         f'{source_code}\n'
         '```'
     )
+
+
+def _response_payload(*, source_code: str, model: str) -> dict:
     return {
         'model': model,
-        'input': prompt,
+        'input': [
+            {'role': 'system', 'content': SYSTEM_PROMPT},
+            {'role': 'user', 'content': _analysis_user_prompt(source_code=source_code)},
+        ],
         'tools': [_tool_schema()],
         'max_output_tokens': MAX_RESPONSE_TOKENS,
     }
